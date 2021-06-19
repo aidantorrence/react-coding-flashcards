@@ -2,11 +2,35 @@
 import React, {useState, useEffect} from "react";
 import AceEditor from "react-ace";
 import Loader from './Loader.js'
+import useDidMountEffect from '../utils/useDidMountEffect.js'
+import axios from 'axios'
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/theme-monokai";
 
+
+async function getSnippets () {
+    try {
+        const res = await axios.get("http://localhost:8080/" )
+        return res.data
+    }
+    catch (e) {
+        console.log(e)
+    }
+}
+
+async function createSnippet (title, prompt, language, category, difficulty, solution) {
+    axios.post("http://localhost:8080/", {title, prompt, language, category, difficulty, solution} )
+    .then( data => console.log(data))
+    .catch( e => console.log(e))
+}
+
+async function deleteSnippet (id) {
+    axios.delete("http://localhost:8080/", id )
+    .then( data => console.log(data))
+    .catch( e => console.log(e))
+}
 
 
 const language_codes = {python: 71, javascript: 63}
@@ -22,16 +46,27 @@ function Ace() {
     const [solution, setSolution] = useState('')
     const [solutionToggle, setSolutionToggle] = useState(false)
     const [solutionHeight, setSolutionHeight] = useState('')
-    const [editorHeight, setEditorHeight] = useState('500px')
+    const [editorHeight, setEditorHeight] = useState('450px')
     const [category, setCategory] = useState('')
     const [categoryInput, setCategoryInput] = useState('')
     const [difficulty, setDifficulty] = useState('')
     const [filteredSnippets, setFilteredSnippets] = useState(codeSnippets)
     const [filteredCategory, setFilteredCategory] = useState('Filter...')
+    const [id, setId] = useState('')
     
 
+    useEffect( () => {
+        console.log('yesssss', codeSnippets)
+        getSnippets()
+        .then(data => {
+            setCodeSnippets(data)
+            setFilteredSnippets(data)
+        })
+    }, [])
 
-
+    useDidMountEffect ( () => {
+        handleRandomSnip()
+    },[filteredCategory])
     
     useEffect ( () => {
         localStorage.setItem('examples', JSON.stringify([...codeSnippets]))
@@ -94,7 +129,7 @@ function Ace() {
         const randomSnippet = filteredSnippets[Math.floor(Math.random() * filteredSnippets.length)]
         // console.log(localStorage.getItem('examples'))
         // console.log(randomSnippet)
-        setValue(randomSnippet.value)
+        setValue(randomSnippet.prompt)
         setTitle(randomSnippet.title)
         setLanguage(randomSnippet.language)
         setSolution(randomSnippet.solution)
@@ -102,7 +137,8 @@ function Ace() {
         setSolutionHeight('')
         setDifficulty(randomSnippet.difficulty)
         setCategory(randomSnippet.category)
-        setEditorHeight('500px')
+        setId(randomSnippet._id)
+        setEditorHeight('450px')
     }
 
 
@@ -133,10 +169,16 @@ function Ace() {
 
     function handleSnipSave() {
         const filteredSnips = codeSnippets.filter(item => item.title !== title)
-
-        if (!titleInput || !categoryInput || !difficulty || !value) {
+        if ((!titleInput && !title) || (!categoryInput && !category) || !difficulty || !value) {
             return
         }
+        createSnippet(titleInput || title, value, language, categoryInput || category, difficulty, solution)
+        getSnippets()
+        .then(data => {
+            setCodeSnippets(data)
+            setFilteredSnippets(data)
+            console.log('yessman', codeSnippets)
+        })
 
         setCodeSnippets([...filteredSnips, {language, title: titleInput || title, category: categoryInput || category, difficulty, value, solution} ])
         setTitleInput('')
@@ -167,6 +209,7 @@ function Ace() {
         setEditorHeight('250px')
     }
     function handleDeleteSnip() {
+        deleteSnippet(id).then(res => console.log('yes ok', res))
         setValue('')
         setTitle('')
         setLanguage('python')
@@ -180,7 +223,7 @@ function Ace() {
     function handleAnchorClick(e) {
         e.preventDefault()
         const chosenSnippet = codeSnippets.find ( item => item.title === e.target.innerText)
-        setValue(chosenSnippet.value)
+        setValue(chosenSnippet.prompt)
         setTitle(chosenSnippet.title)
         setLanguage(chosenSnippet.language)
         setSolution(chosenSnippet.solution)
@@ -188,9 +231,14 @@ function Ace() {
         setSolutionHeight('')
         setDifficulty(chosenSnippet.difficulty)
         setCategory(chosenSnippet.category)
-        setEditorHeight('500px')
+        setEditorHeight('450px')
         // console.log(e)
         console.log(codeSnippets)
+    }
+
+    function handleExpandClick() {
+        const expandedHeight = (parseInt(editorHeight.replace('px','')) + 250).toString()
+        setEditorHeight(`${expandedHeight}px`)
     }
 
     function SnipCategories() {
@@ -242,7 +290,7 @@ function Ace() {
             } else {
                 setFilteredSnippets(codeSnippets.filter(item => item.category === e.target.value ))
             }
-            console.log(snipCategories, codeSnippets, filteredCategory)
+            
         }
 
         return <>
@@ -287,7 +335,7 @@ function Ace() {
             <SnipFilter />
             </div>
         </div>
-        <div style={{width: '636px', height: editorHeight}}>
+        <div style={{width: '80vh', height: editorHeight}}>
             <AceEditor
             mode={language}
             theme="monokai"
@@ -295,24 +343,39 @@ function Ace() {
             width='100%'
             value={value}
             onChange={onChange}
+            showPrintMargin={false}
             name="UNIQUE_ID_OF_DIV"
             editorProps={{ $blockScrolling: true }}
             />
         </div>
     </div>
     <div >
-        <button style={{padding: '5px'}} onClick={handleConsoleClick}>Run</button>
-        <div className='console-container'>
+        
+        <div style={{display: 'flex', justifyContent: 'space-between'}}>
+            <div>
+                <button style={{padding: '5px'}} onClick={handleConsoleClick}>Run</button>
+                <button style={{padding: '5px'}} onClick={handleExpandClick}>Expand</button>
+            </div>
+            <div>
+                <button style={{padding: '5px'}} onClick={handleRandomSnip}>Solved</button>
+                <button style={{padding: '5px'}} onClick={handleRandomSnip}>Failed</button>
+            </div>
+        </div>
+        <div className='console-container' style={{width: '80vh'}}>
             {isLoading ? <Loader /> : <p style={{padding: '5px'}}>{outputString}</p>}
         </div>
-        <div style={{width: '636px', height: solutionHeight}}>
-            <button style={{padding: '5px'}} onClick={handleSolutionHeight}>Solution</button>
+        <div style={{width: '80vh', height: solutionHeight}}>
+            <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                <button style={{padding: '5px'}} onClick={handleSolutionHeight}>Solution</button>
+            </div>
+
             {solutionToggle && <AceEditor
                 mode={language}
                 theme="monokai"
                 height='90%'
                 width='100%'
                 value={solution}
+                showPrintMargin={false}
                 onChange={e => setSolution(e)}
                 name="UNIQUE_ID_OF_DIV"
                 editorProps={{ $blockScrolling: true }}
