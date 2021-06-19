@@ -59,8 +59,8 @@ function Ace() {
         console.log('yesssss', codeSnippets)
         getSnippets()
         .then(data => {
-            setCodeSnippets(data)
-            setFilteredSnippets(data)
+            setCodeSnippets(prev => data || prev)
+            setFilteredSnippets(prev => data || prev)
         })
     }, [])
 
@@ -175,8 +175,8 @@ function Ace() {
         createSnippet(titleInput || title, value, language, categoryInput || category, difficulty, solution)
         getSnippets()
         .then(data => {
-            setCodeSnippets(data)
-            setFilteredSnippets(data)
+            setCodeSnippets(prev => data || prev)
+            setFilteredSnippets(prev => data || prev)
             console.log('yessman', codeSnippets)
         })
 
