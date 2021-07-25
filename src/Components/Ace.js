@@ -27,7 +27,7 @@ async function createSnippet (title, prompt, language, category, difficulty, sol
 }
 
 async function deleteSnippet (id) {
-    axios.delete("http://localhost:8080/", id )
+    axios.delete("http://localhost:8080/", { data: {id} } )
     .then( data => console.log(data))
     .catch( e => console.log(e))
 }
@@ -231,6 +231,7 @@ function Ace() {
         setSolutionHeight('')
         setDifficulty(chosenSnippet.difficulty)
         setCategory(chosenSnippet.category)
+        setId(chosenSnippet._id)        
         setEditorHeight('450px')
         // console.log(e)
         console.log(codeSnippets)
