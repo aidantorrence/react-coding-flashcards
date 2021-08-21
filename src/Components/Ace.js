@@ -7,7 +7,7 @@ import axios from 'axios'
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-python";
-import "ace-builds/src-noconflict/theme-monokai";
+import "ace-builds/src-noconflict/theme-dracula";
 
 
 async function getSnippets () {
@@ -271,8 +271,9 @@ function Ace() {
         <option value="Choose an option">Choose...</option>
         {[...snipCategories].map(item => <option key={item} value={item} >{item}</option>)}
         </select>
-        {codeSnippets.filter(item => item.category === sidebarCategory ).map( item => <a onClick={handleAnchorClick} href="#" key={item.value}>{item.title}</a> )}
-
+        <ol>
+        {codeSnippets.filter(item => item.category === sidebarCategory ).map( item => <li onClick={handleAnchorClick} href="#" key={item.value}>{item.title}</li> )}
+        </ol>
         </>
     }
     function SnipFilter() {
@@ -296,7 +297,7 @@ function Ace() {
 
         return <>
         <label htmlFor="filteredCategory"></label>
-        <select value={filteredCategory} onChange={handleFilteredSnippets} style={{padding: '5px', width: '147px'}} name="filteredCategory" id="filteredCategory">
+        <select value={filteredCategory} onChange={handleFilteredSnippets} style={{padding: '5px'}} name="filteredCategory" id="filteredCategory">
         <option value="Filter...">Filter...</option>
         <option value="All">All</option>
         {[...snipCategories].map(item => <option key={item} value={item} >{item}</option>)}
@@ -316,30 +317,33 @@ function Ace() {
       <button onClick={handleSnipSave} >Save</button>
       <button onClick={handleDeleteSnip} >Delete</button>
   </div>
-  <div className="code-editor-header">
-        <h1 style={{display: 'flex', fontSize: '22px'}}>
-            {!title && <><label style={{fontSize: '16px'}} htmlFor="title">Title:</label>
-            <input style={{width: '636px'}} onChange={e => setTitleInput(e.target.value)} type="text" value={titleInput}/></>}
-            {title}
-        </h1>
-    </div>
     <div className='code-editor-container' >
-        <div style={{display: 'flex', justifyContent: 'space-between'}}>
-            <div>
-                <label htmlFor="languages"></label>
-                <select value={language} onChange={e=> setLanguage(e.target.value)} style={{padding: '5px'}} name="languages" id="languages">
-                    <option value="python">Python</option>
-                    <option value="javascript">Javascript</option>
-                </select>
+        <div style={{display: 'flex', width: '80vh', justifyContent: 'space-between', paddingLeft: '3px', 
+        paddingRight: '3px', paddingBottom: '10px', paddingTop: '10px', boxSizing: 'border-box'}}>
+            <div className="code-editor-header">
+                    <h1 style={{display: 'flex', fontSize: '22px'}}>
+                        {!title && <><label style={{fontSize: '16px'}} htmlFor="title">Title:</label>
+                        <input style={{width: '200px'}} onChange={e => setTitleInput(e.target.value)} type="text" value={titleInput}/></>}
+                        {title}
+                    </h1>
             </div>
-            <div>
-            <SnipFilter />
+            <div style={{display: 'flex', alignItems: 'flex-end'}}>
+                <div>
+                    <label htmlFor="languages"></label>
+                    <select value={language} onChange={e=> setLanguage(e.target.value)} style={{padding: '5px'}} name="languages" id="languages">
+                        <option value="python">Python</option>
+                        <option value="javascript">Javascript</option>
+                    </select>
+                </div>
+                <div>
+                <SnipFilter />
+                </div>
             </div>
         </div>
         <div style={{width: '80vh', height: editorHeight}}>
             <AceEditor
             mode={language}
-            theme="monokai"
+            theme="dracula"
             height='100%'
             width='100%'
             value={value}
@@ -347,6 +351,7 @@ function Ace() {
             showPrintMargin={false}
             name="UNIQUE_ID_OF_DIV"
             editorProps={{ $blockScrolling: true }}
+            fontFamily="Roboto Mono"
             />
         </div>
     </div>
@@ -365,14 +370,14 @@ function Ace() {
         <div className='console-container' style={{width: '80vh'}}>
             {isLoading ? <Loader /> : <p style={{padding: '5px'}}>{outputString}</p>}
         </div>
-        <div style={{width: '80vh', height: solutionHeight}}>
+        <div className="solution-container" style={{width: '80vh', height: solutionHeight}}>
             <div style={{display: 'flex', justifyContent: 'space-between'}}>
                 <button style={{padding: '5px'}} onClick={handleSolutionHeight}>Solution</button>
             </div>
 
             {solutionToggle && <AceEditor
                 mode={language}
-                theme="monokai"
+                theme="dracula"
                 height='90%'
                 width='100%'
                 value={solution}
