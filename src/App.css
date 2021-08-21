@@ -1,6 +1,8 @@
 * {
   margin: 0;
   padding: 0;
+  /* border-radius: 10px; */
+  font-family: system-ui;
 }
 
 
@@ -11,26 +13,80 @@
   align-items: center;
 }
 
-@media (min-width: 968px) {
+.sidenav select {
+  border-radius: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+@media (min-width: 1180px) {
   .sidenav {
     height: 100%;
-    width: 15%; /* Set the width of the sidebar */
+    width: calc(50% - 425px);
+    /* width: 25% - 500px;  */
+    float: left;
     position: fixed; /* Fixed Sidebar (stay in place on scroll) */
     z-index: 1; /* Stay on top */
     top: 0; /* Stay at the top */
     left: 0;
-    color: white;
-    background-color: rgb(165, 125, 125); /* Black */
     overflow-x: hidden; /* Disable horizontal scroll */
     padding-top: 20px;
+    margin-left: 20px;
+    margin-top: 48px;
   }
 
-  .sidenav a {
-    display: block;
+  .sidenav li {
+    /* display: block; */
   }
 }
 
-@media (max-width: 968px) {
+ol {
+  counter-reset: orderedlist;
+  --li-bg: rgb(204, 191, 204);
+  font-family: "Indie Flower";
+
+}
+
+ol li::before {
+  counter-increment: orderedlist;
+  content: counter(orderedlist);
+  padding-right: 5px;
+  padding-left: 5px;
+  font-weight: bold;
+  display: inline-block;
+  width: 10px;
+  margin-left: 7px;
+  margin-right: 7px;
+  background-color: var(--li-bg);
+  border-radius: 3px;
+  /* font-size: 14px; */
+  text-align: center;
+}
+
+.sidenav li:hover {
+  cursor: pointer;
+  color: rgb(50, 131, 224);
+  background-color:rgb(191, 201, 212);
+  transform: scale(1.005); 
+}
+
+.sidenav li {
+  cursor: pointer;
+  transition: .2s;
+  margin-bottom: 5px;
+  margin-right: 5px;
+  margin-left: 5px;
+  background-color:rgb(236, 245, 255);
+  border-radius: 10px;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  padding-right: 5px;
+  padding-left: 5px;
+  line-height: 19px;
+  box-shadow:inset 0 0.6em 2em -0.3em rgba(0,0,0,0.15),inset 0 0 0em 0.05em rgba(255,255,255,0.12), 2px 2px 5px rgb(3, 53, 53);
+}
+
+@media (max-width: 1180px) {
   .sidenav {
     display: none;
   }
@@ -38,10 +94,9 @@
 
 .code-editor-header h1{
   font-size: 14;
-  font-family: Arial, Helvetica, sans-serif;
   font-weight: normal;
   text-align: left;
-  width: 636px;
+  font-weight: bold;
 }
 
 .console-container {
@@ -50,6 +105,19 @@
   background-color: black;
   color: white;
   font-family: Arial, Helvetica, sans-serif;
-  
+  border-radius: 10px;
   box-sizing: border-box;
+  
 }
+
+.code-editor-container * {
+  border-radius: 10px;
+}
+.solution-container * {
+  border-radius: 10px;
+}
+.ace_content *{
+  border-radius: 0px;
+  font-family: "Roboto Mono",monospace;
+}
+
