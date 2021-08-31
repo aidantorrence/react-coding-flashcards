@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react'
 
-function query() {
-    fetch("https://judge0-ce.p.rapidapi.com/submissions/?base64_encoded=true&wait=true", 
+
+export default function query(value) {
+    fetch("https://judge0-ce.p.rapidapi.com/submissions/?base64_encoded=true&wait=false", 
     {
         method: 'POST',
         headers: {
@@ -11,31 +11,29 @@ function query() {
             "useQueryString": true
         },
         body: JSON.stringify({
-            "language_id": language_codes[language],
+            "language_id": 71,
             "source_code": btoa(value),
             "stdin": "SnVkZ2Uw"
         })
     }).then(res => res.json()).then(data => {
+
+        fetch(`https://ce.judge0.com/submissions/${data.token}?base64_encoded=false&fields=stdout,stderr,status_id,language_id`)
+        .then(res => res.json()).then(data => console.log(data))
+
+
         console.log(data)
         console.log(data.stdout)
         if (data.stderr) {
-            setOutputString(atob(data.stderr))
+            return atob(data.stderr)
         }
         else if (data.stdout === null) {
-            if (data.message) {
-                setOutputString(atob(data.message))
-            } else {
-            setOutputString('')
-            }
+            return data.message ? data.message : ''
         } 
         else {
-            setOutputString(atob(data.stdout))
+            return atob(data.stdout)
         }
-        setIsLoading(false)
     }).catch(e => {
         console.log(e)
-        setIsLoading(false)
-        setOutputString(e)
     })  
 }
 

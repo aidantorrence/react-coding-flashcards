@@ -1,7 +1,8 @@
 
-import React, {useState} from "react";
+import React, { useState, useEffect } from "react";
 import Ace from './Components/Ace.js'
 import './App.css';
+import query from './utils/query'
 
 const examples = [{
   language: 'python', 
@@ -13,12 +14,15 @@ const examples = [{
 
 function App() {
 
-
+  useEffect ( () => {
+    console.log('console logging the new query function ', query('hello'))
+  }, [])
 
 
   return <>
   <div className="main">
     <Ace />
+    <div>hello</div>
   </div>
   </>
 }
