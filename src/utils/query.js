@@ -1,7 +1,7 @@
 
 
-export default function query(value) {
-    fetch("https://judge0-ce.p.rapidapi.com/submissions/?base64_encoded=true&wait=false", 
+export default async function query(value, language_id) {
+    const res = await fetch("https://judge0-ce.p.rapidapi.com/submissions/?base64_encoded=true&wait=false", 
     {
         method: 'POST',
         headers: {
@@ -15,26 +15,33 @@ export default function query(value) {
             "source_code": btoa(value),
             "stdin": "SnVkZ2Uw"
         })
-    }).then(res => res.json()).then(data => {
-
-        fetch(`https://ce.judge0.com/submissions/${data.token}?base64_encoded=false&fields=stdout,stderr,status_id,language_id`)
-        .then(res => res.json()).then(data => console.log(data))
-
-
-        console.log(data)
-        console.log(data.stdout)
-        if (data.stderr) {
-            return atob(data.stderr)
-        }
-        else if (data.stdout === null) {
-            return data.message ? data.message : ''
-        } 
-        else {
-            return atob(data.stdout)
-        }
-    }).catch(e => {
-        console.log(e)
-    })  
+    })
+    const data = await res.json()
+    return await getFromToken(data.token)
 }
 
-
+async function getFromToken (token) {
+    var data
+    let threshold = 0
+    do {
+        await new Promise(resolve => setTimeout(resolve, 100))
+        const res = await fetch(`https://ce.judge0.com/submissions/${token}?base64_encoded=false&fields=*`)
+        data = await res.json()
+        // console.log(data.status.description)
+        threshold++
+    } while (data.status.description !== 'Accepted' && threshold < 20)
+    return data
+    
+        //     console.log(data)
+        //     console.log(data.stdout)
+        //     if (data.stderr) {
+        //         return atob(data.stderr)
+        //     }
+        //     else if (data.stdout === null) {
+        //         return data.message ? data.message : ''
+        //     } 
+        //     else {
+        //         return atob(data.stdout)
+        //     }
+        // })
+}            

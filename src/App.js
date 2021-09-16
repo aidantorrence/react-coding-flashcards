@@ -13,18 +13,20 @@ const examples = [{
   
 
 function App() {
+  const [value, setValue] = useState('')
 
-  useEffect ( () => {
-    console.log('console logging the new query function ', query('hello'))
-  }, [])
-
+function handleClick () {
+    query(`print('hello')`, 71).then(res => setValue(res.stdout))
+  }
 
   return <>
   <div className="main">
     <Ace />
-    <div>hello</div>
+    <div>{value}</div>
+    <button onClick={handleClick}>Submit</button>
   </div>
   </>
 }
 
 export default App;
+
