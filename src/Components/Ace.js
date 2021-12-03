@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AceEditor from "react-ace";
-import Loader from "./Loader.js";
+import Loader from "./Loader";
 import useDidMountEffect from "../utils/useDidMountEffect.js";
 import { useQuery } from "react-query";
 import axios from "axios";
@@ -13,6 +13,7 @@ import SnipSidebar from "./SnipSidebar";
 import SnipFilter from "./SnipFilter";
 import { languageCodes } from "../utils/languageCodes";
 import executeCode from "../utils/executeCode";
+import CodeOutput from "./CodeOutput";
 
 async function getSnippets() {
   try {
@@ -93,12 +94,25 @@ function Ace() {
     return () => document.removeEventListener("keydown", handleCmndEnter);
   }, []);
 
-  const { status, data, error } = useQuery("getSnippets", async () => {
+  const {
+    status,
+    data: snippets,
+    error,
+  } = useQuery("getSnippets", async () => {
     const { data } = await axios.get("http://localhost:8080/");
     if (data) {
       setSnippet(getRandomSnippet(data));
     }
     return data;
+  });
+
+  const {
+    refetch,
+    status: executionStatus,
+    data: outputData,
+  } = useQuery("executeCode", () => executeCode(snippet), {
+    refetchOnWindowFocus: false,
+    enabled: false,
   });
 
   //   if (data) {
@@ -118,8 +132,8 @@ function Ace() {
   }
 
   function handleConsoleClick() {
-    setIsLoading(true);
-    executeCode(snippet, setOutputString);
+    refetch();
+    console.log(outputData);
   }
 
   function handleCmndEnter(e) {
@@ -167,7 +181,12 @@ function Ace() {
     setEditorHeight(`${expandedHeight}px`);
   }
 
-  console.log("react-query test data fetch", data, "react-query error", error);
+  console.log(
+    "react-query test snippets fetch",
+    snippets,
+    "react-query error",
+    error
+  );
 
   if (status === "error") return <>Error: {error.message}</>;
   if (status === "loading") return <div>Loading</div>;
@@ -175,7 +194,7 @@ function Ace() {
   return (
     <>
       <div className="sidenav">
-        <SnipSidebar snippet={snippet} data={data} />
+        <SnipSidebar snippet={snippet} snippets={snippets} />
       </div>
       <div>
         <button onClick={handleNewSnip}>New</button>
@@ -208,7 +227,7 @@ function Ace() {
               <SnipFilter
                 filteredCategory={filteredCategory}
                 setFilteredCategory={setFilteredCategory}
-                data={data}
+                snippets={snippets}
               />
             </div>
           </div>
@@ -248,6 +267,7 @@ function Ace() {
           </div>
         </div>
         <div className="console-container" style={{ width: "80vh" }}>
+          <CodeOutput status={executionStatus} data={outputData} />
           {isLoading ? (
             <Loader />
           ) : (

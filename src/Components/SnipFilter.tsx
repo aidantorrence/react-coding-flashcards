@@ -3,16 +3,16 @@ import Snippet from "../types/Snippet";
 interface SnipFilterProps {
   filteredCategory: string;
   setFilteredCategory: (category: string) => void;
-  data: Snippet[];
+  snippets: Snippet[];
 }
 
 export default function SnipFilter({
   filteredCategory,
   setFilteredCategory,
-  data,
+  snippets,
 }: SnipFilterProps) {
   const snipCategories: Set<string> = new Set();
-  for (let snippet of data) {
+  for (let snippet of snippets) {
     snipCategories.add(snippet.category);
   }
 
