@@ -9,6 +9,8 @@ import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/theme-dracula";
 import getRandomSnippet from "../utils/getRandomSnippet.js";
+import SnipSidebar from "./SnipSidebar";
+import SnipFilter from "./SnipFilter";
 
 async function getSnippets() {
   try {
@@ -86,7 +88,7 @@ function Ace() {
   const [editorHeight, setEditorHeight] = useState("450px");
   const [categoryInput, setCategoryInput] = useState("");
   const [filteredSnippets, setFilteredSnippets] = useState(codeSnippets);
-  const [filteredCategory, setFilteredCategory] = useState("Filter...");
+  const [filteredCategory, setFilteredCategory] = useState("All");
 
   useEffect(() => {
     document.addEventListener("keydown", handleCmndEnter);
@@ -143,8 +145,7 @@ function Ace() {
   const { status, data, error } = useQuery("getSnippets", async () => {
     const { data } = await axios.get("http://localhost:8080/");
     if (data) {
-      const selected = getRandomSnippet(data);
-      setSnippet(selected);
+      setSnippet(getRandomSnippet(data));
     }
     return data;
   });
@@ -243,87 +244,13 @@ function Ace() {
       <>
         <label htmlFor="category"></label>
         <select
-          //   value={category}
+          value={snippet?.category}
           onChange={(e) => setCategoryInput(e.target.value)}
           style={{ padding: "5px", width: "147px" }}
           name="category"
           id="category"
         >
           <option value="Choose an option">Choose...</option>
-          {[...snipCategories].map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-      </>
-    );
-  }
-
-  function SnipSidebar() {
-    const [sidebarCategory, setSidebarCategory] = useState(snippet?.category);
-    const snipCategories = new Set();
-    for (let snippet of data) {
-      snipCategories.add(snippet.category);
-    }
-    return (
-      <>
-        <label htmlFor="category"></label>
-        <select
-          value={sidebarCategory}
-          onChange={(e) => setSidebarCategory(e.target.value)}
-          style={{ padding: "5px", width: "147px" }}
-          name="category"
-          id="category"
-        >
-          <option value="Choose an option">Choose...</option>
-          {[...snipCategories].map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-        <ol>
-          {data
-            .filter((snippet) => snippet.category === sidebarCategory)
-            .map((snippet) => (
-              <li href="#" key={snippet.id}>
-                {snippet.title}
-              </li>
-            ))}
-        </ol>
-      </>
-    );
-  }
-  function SnipFilter() {
-    const snipCategories = new Set();
-    for (let item of codeSnippets) {
-      snipCategories.add(item.category);
-    }
-
-    function handleFilteredSnippets(e) {
-      setFilteredCategory(e.target.value);
-      if (e.target.value === "All") {
-        setFilteredSnippets(codeSnippets);
-      } else {
-        setFilteredSnippets(
-          codeSnippets.filter((item) => item.category === e.target.value)
-        );
-      }
-    }
-
-    return (
-      <>
-        <label htmlFor="filteredCategory"></label>
-        <select
-          value={filteredCategory}
-          onChange={handleFilteredSnippets}
-          style={{ padding: "5px" }}
-          name="filteredCategory"
-          id="filteredCategory"
-        >
-          <option value="Filter...">Filter...</option>
-          <option value="All">All</option>
           {[...snipCategories].map((item) => (
             <option key={item} value={item}>
               {item}
@@ -342,7 +269,7 @@ function Ace() {
   return (
     <>
       <div className="sidenav">
-        <SnipSidebar />
+        <SnipSidebar snippet={snippet} data={data} />
       </div>
       <div>
         <button onClick={handleNewSnip}>New</button>
@@ -372,7 +299,11 @@ function Ace() {
               </select>
             </div>
             <div>
-              <SnipFilter />
+              <SnipFilter
+                filteredCategory={filteredCategory}
+                setFilteredCategory={setFilteredCategory}
+                data={data}
+              />
             </div>
           </div>
         </div>
@@ -451,27 +382,7 @@ function Ace() {
               marginRight: "20px",
             }}
           >
-            {snippet?.category ? (
-              `Category: ${snippet?.category}`
-            ) : (
-              <>
-                <label style={{ fontSize: "16px" }} htmlFor="category">
-                  Add a category:
-                </label>
-                <input
-                  style={{
-                    width: "150px",
-                    paddingLeft: "5px",
-                    marginLeft: "5px",
-                  }}
-                  placeholder="Add new..."
-                  onChange={(e) => setCategoryInput(e.target.value)}
-                  type="text"
-                  value={categoryInput}
-                />
-                <SnipCategories />
-              </>
-            )}
+            Category: {snippet?.category}
           </h2>
         </div>
         <div
