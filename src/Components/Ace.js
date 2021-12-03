@@ -11,6 +11,8 @@ import "ace-builds/src-noconflict/theme-dracula";
 import getRandomSnippet from "../utils/getRandomSnippet.js";
 import SnipSidebar from "./SnipSidebar";
 import SnipFilter from "./SnipFilter";
+import { languageCodes } from "../utils/languageCodes";
+import executeCode from "../utils/executeCode";
 
 async function getSnippets() {
   try {
@@ -72,21 +74,17 @@ async function deleteSnippet(id) {
     .catch((e) => console.log(e));
 }
 
-const language_codes = { python: 71, javascript: 63 };
-
 function Ace() {
   const [snippet, setSnippet] = useState({});
   const [codeSnippets, setCodeSnippets] = useState(
     JSON.parse(localStorage.getItem("examples")) || []
   );
   const [value, setValue] = useState("");
-  const [titleInput, setTitleInput] = useState("");
   const [outputString, setOutputString] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [solutionToggle, setSolutionToggle] = useState(false);
   const [solutionHeight, setSolutionHeight] = useState("");
   const [editorHeight, setEditorHeight] = useState("450px");
-  const [categoryInput, setCategoryInput] = useState("");
   const [filteredSnippets, setFilteredSnippets] = useState(codeSnippets);
   const [filteredCategory, setFilteredCategory] = useState("All");
 
@@ -94,53 +92,6 @@ function Ace() {
     document.addEventListener("keydown", handleCmndEnter);
     return () => document.removeEventListener("keydown", handleCmndEnter);
   }, []);
-
-  useEffect(() => {
-    if (!isLoading) {
-      return;
-    } else {
-      fetch(
-        "https://judge0-ce.p.rapidapi.com/submissions/?base64_encoded=true&wait=true",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-RapidAPI-Key":
-              "99e3648241mshfb79b6fb9b41156p11abebjsne3388a69c835",
-            "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
-            useQueryString: true,
-          },
-          body: JSON.stringify({
-            // language_id: language_codes[language],
-            source_code: btoa(value),
-            stdin: "SnVkZ2Uw",
-          }),
-        }
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          console.log(data);
-          console.log(data.stdout);
-          if (data.stderr) {
-            setOutputString(atob(data.stderr));
-          } else if (data.stdout === null) {
-            if (data.message) {
-              setOutputString(atob(data.message));
-            } else {
-              setOutputString("");
-            }
-          } else {
-            setOutputString(atob(data.stdout));
-          }
-          setIsLoading(false);
-        })
-        .catch((e) => {
-          console.log(e);
-          setIsLoading(false);
-          setOutputString(e);
-        });
-    }
-  }, [isLoading]);
 
   const { status, data, error } = useQuery("getSnippets", async () => {
     const { data } = await axios.get("http://localhost:8080/");
@@ -167,12 +118,8 @@ function Ace() {
   }
 
   function handleConsoleClick() {
-    console.log(btoa(value));
     setIsLoading(true);
-    if (!value) {
-      setIsLoading(false);
-      setOutputString("");
-    }
+    executeCode(snippet, setOutputString);
   }
 
   function handleCmndEnter(e) {
@@ -206,59 +153,18 @@ function Ace() {
 
   function handleNewSnip() {
     setValue("");
-    setCategoryInput("");
     setEditorHeight("250px");
   }
   function handleDeleteSnip() {
     setValue("");
     setEditorHeight("250px");
   }
-  //   function handleAnchorClick(e) {
-  //     e.preventDefault();
-  //     setValue(chosenSnippet.prompt);
-  //     setLanguage(chosenSnippet.language);
-  //     setSolution(chosenSnippet.solution);
-  //     setSolutionToggle(false);
-  //     setSolutionHeight("");
-  //     setDifficulty(chosenSnippet.difficulty);
-  //     setCategory(chosenSnippet.category);
-  //     setId(chosenSnippet._id);
-  //     setEditorHeight("450px");
-  //     // console.log(e)
-  //     console.log(codeSnippets);
-  //   }
 
   function handleExpandClick() {
     const expandedHeight = (
       parseInt(editorHeight.replace("px", "")) + 250
     ).toString();
     setEditorHeight(`${expandedHeight}px`);
-  }
-
-  function SnipCategories() {
-    const snipCategories = new Set();
-    for (let item of codeSnippets) {
-      snipCategories.add(item.category);
-    }
-    return (
-      <>
-        <label htmlFor="category"></label>
-        <select
-          value={snippet?.category}
-          onChange={(e) => setCategoryInput(e.target.value)}
-          style={{ padding: "5px", width: "147px" }}
-          name="category"
-          id="category"
-        >
-          <option value="Choose an option">Choose...</option>
-          {[...snipCategories].map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-      </>
-    );
   }
 
   console.log("react-query test data fetch", data, "react-query error", error);
