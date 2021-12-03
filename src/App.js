@@ -1,7 +1,8 @@
 
-import React, {useState} from "react";
+import React, { useState, useEffect } from "react";
 import Ace from './Components/Ace.js'
 import './App.css';
+import query from './utils/query'
 
 const examples = [{
   language: 'python', 
@@ -12,15 +13,20 @@ const examples = [{
   
 
 function App() {
+  const [value, setValue] = useState('')
 
-
-
+function handleClick () {
+    query(`print('hello')`, 71).then(res => setValue(res.stdout))
+  }
 
   return <>
   <div className="main">
     <Ace />
+    <div>{value}</div>
+    <button onClick={handleClick}>Submit</button>
   </div>
   </>
 }
 
 export default App;
+
