@@ -73,7 +73,7 @@ async function deleteSnippet(id) {
 const language_codes = { python: 71, javascript: 63 };
 
 function Ace() {
-const [snippet, setSnippet] = useState({});
+  const [snippet, setSnippet] = useState({});
   const [codeSnippets, setCodeSnippets] = useState(
     JSON.parse(localStorage.getItem("examples")) || []
   );
@@ -143,17 +143,16 @@ const [snippet, setSnippet] = useState({});
   const { status, data, error } = useQuery("getSnippets", async () => {
     const { data } = await axios.get("http://localhost:8080/");
     if (data) {
-        const selected = getRandomSnippet(data);
-        setSnippet(selected);
-        setValue(selected.prompt)
+      const selected = getRandomSnippet(data);
+      setSnippet(selected);
     }
     return data;
   });
 
-//   if (data) {
-//       const { title, prompt, language, category, difficulty, solution } =
-//         data[data?.arrId] || {};
-//   }
+  //   if (data) {
+  //       const { title, prompt, language, category, difficulty, solution } =
+  //         data[data?.arrId] || {};
+  //   }
 
   function handleRandomSnip() {
     const randomSnippet =
@@ -186,23 +185,23 @@ const [snippet, setSnippet] = useState({});
     setSolutionHeight(!solutionHeight ? "250px" : "");
   }
 
-//   function handleSnipSave() {
-//     if ((!categoryInput && !category) || !difficulty || !value) {
-//       return;
-//     }
-//     createSnippet(
-//       value,
-//       language,
-//       categoryInput || category,
-//       difficulty,
-//       solution
-//     );
-//     getSnippets().then((data) => {
-//       setCodeSnippets((prev) => data || prev);
-//       setFilteredSnippets((prev) => data || prev);
-//       console.log("yessman", codeSnippets);
-//     });
-//   }
+  //   function handleSnipSave() {
+  //     if ((!categoryInput && !category) || !difficulty || !value) {
+  //       return;
+  //     }
+  //     createSnippet(
+  //       value,
+  //       language,
+  //       categoryInput || category,
+  //       difficulty,
+  //       solution
+  //     );
+  //     getSnippets().then((data) => {
+  //       setCodeSnippets((prev) => data || prev);
+  //       setFilteredSnippets((prev) => data || prev);
+  //       console.log("yessman", codeSnippets);
+  //     });
+  //   }
 
   function handleNewSnip() {
     setValue("");
@@ -244,7 +243,7 @@ const [snippet, setSnippet] = useState({});
       <>
         <label htmlFor="category"></label>
         <select
-        //   value={category}
+          //   value={category}
           onChange={(e) => setCategoryInput(e.target.value)}
           style={{ padding: "5px", width: "147px" }}
           name="category"
@@ -383,8 +382,8 @@ const [snippet, setSnippet] = useState({});
             theme="dracula"
             height="100%"
             width="100%"
-            value={value}
-            onChange={e => setValue(e.target.value)}
+            value={snippet?.prompt}
+            onChange={(value) => setSnippet({ ...snippet, prompt: value })}
             showPrintMargin={false}
             name="UNIQUE_ID_OF_DIV"
             editorProps={{ $blockScrolling: true }}
