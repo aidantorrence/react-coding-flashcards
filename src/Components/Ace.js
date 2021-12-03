@@ -262,15 +262,10 @@ const [snippet, setSnippet] = useState({});
   }
 
   function SnipSidebar() {
-    const [sidebarCategory, setSidebarCategory] = useState('hello');
-    console.log(
-      codeSnippets
-        .filter((item) => item.category === sidebarCategory)
-        .map((item) => item.title)
-    );
+    const [sidebarCategory, setSidebarCategory] = useState(snippet?.category);
     const snipCategories = new Set();
-    for (let item of codeSnippets) {
-      snipCategories.add(item.category);
+    for (let snippet of data) {
+      snipCategories.add(snippet.category);
     }
     return (
       <>
@@ -283,18 +278,18 @@ const [snippet, setSnippet] = useState({});
           id="category"
         >
           <option value="Choose an option">Choose...</option>
-          {[...snipCategories].map((item) => (
-            <option key={item} value={item}>
-              {item}
+          {[...snipCategories].map((category) => (
+            <option key={category} value={category}>
+              {category}
             </option>
           ))}
         </select>
         <ol>
-          {codeSnippets
-            .filter((item) => item.category === sidebarCategory)
-            .map((item) => (
-              <li href="#" key={item.value}>
-                {item.title}
+          {data
+            .filter((snippet) => snippet.category === sidebarCategory)
+            .map((snippet) => (
+              <li href="#" key={snippet.id}>
+                {snippet.title}
               </li>
             ))}
         </ol>
@@ -435,13 +430,12 @@ const [snippet, setSnippet] = useState({});
 
           {solutionToggle && (
             <AceEditor
-            //   mode={language}
+              mode={snippet?.language}
               theme="dracula"
               height="90%"
               width="100%"
-            //   value={solution}
+              value={snippet?.solution}
               showPrintMargin={false}
-            //   onChange={(e) => setSolution(e)}
               name="UNIQUE_ID_OF_DIV"
               editorProps={{ $blockScrolling: true }}
             />
@@ -493,7 +487,6 @@ const [snippet, setSnippet] = useState({});
           <label htmlFor="difficulty">Difficulty: </label>
           <select
             value={snippet?.difficulty}
-            // onChange={(e) => setDifficulty(e.target.value)}
             style={{ padding: "5px", width: "147px" }}
             name="difficulty"
             id="difficulty"
