@@ -8,6 +8,7 @@ import axios from "axios";
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/theme-dracula";
+import getRandomSnippet from "../utils/getRandomSnippet.js";
 
 async function getSnippets() {
   try {
@@ -72,47 +73,25 @@ async function deleteSnippet(id) {
 const language_codes = { python: 71, javascript: 63 };
 
 function Ace() {
+const [snippet, setSnippet] = useState({});
   const [codeSnippets, setCodeSnippets] = useState(
     JSON.parse(localStorage.getItem("examples")) || []
   );
-  const [title, setTitle] = useState("");
   const [value, setValue] = useState("");
   const [titleInput, setTitleInput] = useState("");
-  const [language, setLanguage] = useState("python");
   const [outputString, setOutputString] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [solution, setSolution] = useState("");
   const [solutionToggle, setSolutionToggle] = useState(false);
   const [solutionHeight, setSolutionHeight] = useState("");
   const [editorHeight, setEditorHeight] = useState("450px");
-  const [category, setCategory] = useState("");
   const [categoryInput, setCategoryInput] = useState("");
-  const [difficulty, setDifficulty] = useState("");
   const [filteredSnippets, setFilteredSnippets] = useState(codeSnippets);
   const [filteredCategory, setFilteredCategory] = useState("Filter...");
-  const [id, setId] = useState("");
-
-  useEffect(() => {
-    console.log("yesssss", codeSnippets);
-    getSnippets().then((data) => {
-      setCodeSnippets((prev) => data || prev);
-      setFilteredSnippets((prev) => data || prev);
-    });
-  }, []);
-
-  useDidMountEffect(() => {
-    handleRandomSnip();
-  }, [filteredCategory]);
-
-  useEffect(() => {
-    localStorage.setItem("examples", JSON.stringify([...codeSnippets]));
-    console.log(localStorage.getItem("examples"));
-  }, [handleSnipSave]);
 
   useEffect(() => {
     document.addEventListener("keydown", handleCmndEnter);
     return () => document.removeEventListener("keydown", handleCmndEnter);
-  }, [onChange]);
+  }, []);
 
   useEffect(() => {
     if (!isLoading) {
@@ -130,7 +109,7 @@ function Ace() {
             useQueryString: true,
           },
           body: JSON.stringify({
-            language_id: language_codes[language],
+            // language_id: language_codes[language],
             source_code: btoa(value),
             stdin: "SnVkZ2Uw",
           }),
@@ -161,20 +140,29 @@ function Ace() {
     }
   }, [isLoading]);
 
+  const { status, data, error } = useQuery("getSnippets", async () => {
+    const { data } = await axios.get("http://localhost:8080/");
+    if (data) {
+        const selected = getRandomSnippet(data);
+        setSnippet(selected);
+        setValue(selected.prompt)
+    }
+    return data;
+  });
+
+//   if (data) {
+//       const { title, prompt, language, category, difficulty, solution } =
+//         data[data?.arrId] || {};
+//   }
+
   function handleRandomSnip() {
     const randomSnippet =
       filteredSnippets[Math.floor(Math.random() * filteredSnippets.length)];
     // console.log(localStorage.getItem('examples'))
     // console.log(randomSnippet)
     setValue(randomSnippet.prompt);
-    setTitle(randomSnippet.title);
-    setLanguage(randomSnippet.language);
-    setSolution(randomSnippet.solution);
     setSolutionToggle(false);
     setSolutionHeight("");
-    setDifficulty(randomSnippet.difficulty);
-    setCategory(randomSnippet.category);
-    setId(randomSnippet._id);
     setEditorHeight("450px");
   }
 
@@ -193,115 +181,52 @@ function Ace() {
     }
   }
 
-  function onChange(newValue) {
-    console.log(newValue);
-    setValue(newValue);
-  }
-
   function handleSolutionHeight() {
     setSolutionToggle(!solutionToggle);
     setSolutionHeight(!solutionHeight ? "250px" : "");
   }
 
-  function handleSnipSave() {
-    const filteredSnips = codeSnippets.filter((item) => item.title !== title);
-    if (
-      (!titleInput && !title) ||
-      (!categoryInput && !category) ||
-      !difficulty ||
-      !value
-    ) {
-      return;
-    }
-    createSnippet(
-      titleInput || title,
-      value,
-      language,
-      categoryInput || category,
-      difficulty,
-      solution
-    );
-    getSnippets().then((data) => {
-      setCodeSnippets((prev) => data || prev);
-      setFilteredSnippets((prev) => data || prev);
-      console.log("yessman", codeSnippets);
-    });
-
-    setCodeSnippets([
-      ...filteredSnips,
-      {
-        language,
-        title: titleInput || title,
-        category: categoryInput || category,
-        difficulty,
-        value,
-        solution,
-      },
-    ]);
-    setTitleInput("");
-    setTitle("");
-    setDifficulty("");
-    setCategory("");
-    setCategoryInput("");
-    setValue("");
-    setLanguage("python");
-    setSolution("");
-    setEditorHeight("250px");
-
-    // console.log(codeSnippets, localStorage.getItem('examples'))
-    // localStorage.clear()
-    // const storedArray = JSON.parse(localStorage.getItem('examples')) || []
-    // localStorage.setItem('examples', JSON.stringify([...codeSnippets]))
-    // console.log(localStorage.getItem('examples'))
-  }
+//   function handleSnipSave() {
+//     if ((!categoryInput && !category) || !difficulty || !value) {
+//       return;
+//     }
+//     createSnippet(
+//       value,
+//       language,
+//       categoryInput || category,
+//       difficulty,
+//       solution
+//     );
+//     getSnippets().then((data) => {
+//       setCodeSnippets((prev) => data || prev);
+//       setFilteredSnippets((prev) => data || prev);
+//       console.log("yessman", codeSnippets);
+//     });
+//   }
 
   function handleNewSnip() {
     setValue("");
-    setTitle("");
-    setLanguage("python");
-    setSolution("");
-    setDifficulty("");
-    setCategory("");
     setCategoryInput("");
     setEditorHeight("250px");
   }
   function handleDeleteSnip() {
-    deleteSnippet(id).then((res) => console.log("yes ok", res));
     setValue("");
-    setTitle("");
-    setLanguage("python");
-    setSolution("");
-    setDifficulty("");
-    setCategory("");
     setEditorHeight("250px");
-    localStorage.setItem(
-      "examples",
-      JSON.stringify(
-        JSON.parse(localStorage.getItem("examples")).filter(
-          (item) => item.title !== title
-        )
-      )
-    );
-    setCodeSnippets(codeSnippets.filter((item) => item.title !== title));
   }
-  function handleAnchorClick(e) {
-    e.preventDefault();
-    const chosenSnippet = codeSnippets.find(
-      (item) => item.title === e.target.innerText
-    );
-    setValue(chosenSnippet.prompt);
-    setTitle(chosenSnippet.title);
-    setLanguage(chosenSnippet.language);
-    setSolution(chosenSnippet.solution);
-    setSolutionToggle(false);
-    setSolutionHeight("");
-    setDifficulty(chosenSnippet.difficulty);
-    setCategory(chosenSnippet.category);
-    setId(chosenSnippet._id);
-    setEditorHeight("450px");
-    // console.log(e)
-    console.log(codeSnippets);
-  }
+  //   function handleAnchorClick(e) {
+  //     e.preventDefault();
+  //     setValue(chosenSnippet.prompt);
+  //     setLanguage(chosenSnippet.language);
+  //     setSolution(chosenSnippet.solution);
+  //     setSolutionToggle(false);
+  //     setSolutionHeight("");
+  //     setDifficulty(chosenSnippet.difficulty);
+  //     setCategory(chosenSnippet.category);
+  //     setId(chosenSnippet._id);
+  //     setEditorHeight("450px");
+  //     // console.log(e)
+  //     console.log(codeSnippets);
+  //   }
 
   function handleExpandClick() {
     const expandedHeight = (
@@ -319,7 +244,7 @@ function Ace() {
       <>
         <label htmlFor="category"></label>
         <select
-          value={category}
+        //   value={category}
           onChange={(e) => setCategoryInput(e.target.value)}
           style={{ padding: "5px", width: "147px" }}
           name="category"
@@ -337,7 +262,7 @@ function Ace() {
   }
 
   function SnipSidebar() {
-    const [sidebarCategory, setSidebarCategory] = useState(category);
+    const [sidebarCategory, setSidebarCategory] = useState('hello');
     console.log(
       codeSnippets
         .filter((item) => item.category === sidebarCategory)
@@ -368,7 +293,7 @@ function Ace() {
           {codeSnippets
             .filter((item) => item.category === sidebarCategory)
             .map((item) => (
-              <li onClick={handleAnchorClick} href="#" key={item.value}>
+              <li href="#" key={item.value}>
                 {item.title}
               </li>
             ))}
@@ -415,15 +340,10 @@ function Ace() {
     );
   }
 
-  const { isQueryLoading, error, data } = useQuery(
-    "getSnippets",
-    axios.get("http://localhost:8080/")
-  );
+  console.log("react-query test data fetch", data, "react-query error", error);
 
-  console.log('react-query test data fetch', data, 'react-query error', error)
-
-  if (error) return <>Error: {error.message}</>;
-  if (isQueryLoading) return <div>Loading</div>;
+  if (status === "error") return <>Error: {error.message}</>;
+  if (status === "loading") return <div>Loading</div>;
 
   return (
     <>
@@ -433,46 +353,22 @@ function Ace() {
       <div>
         <button onClick={handleNewSnip}>New</button>
         <button onClick={handleRandomSnip}>Generate</button>
-        <button onClick={handleSnipSave}>Save</button>
+        {/* <button onClick={handleSnipSave}>Save</button> */}
         <button onClick={handleDeleteSnip}>Delete</button>
       </div>
       <div className="code-editor-container">
-        <div
-          style={{
-            display: "flex",
-            width: "80vh",
-            justifyContent: "space-between",
-            paddingLeft: "3px",
-            paddingRight: "3px",
-            paddingBottom: "10px",
-            paddingTop: "10px",
-            boxSizing: "border-box",
-          }}
-        >
-          <div className="code-editor-header">
+        <div className="code-editor-header">
+          <div className="code-editor-title">
             <h1 style={{ display: "flex", fontSize: "22px" }}>
-              {!title && (
-                <>
-                  <label style={{ fontSize: "16px" }} htmlFor="title">
-                    Title:
-                  </label>
-                  <input
-                    style={{ width: "200px" }}
-                    onChange={(e) => setTitleInput(e.target.value)}
-                    type="text"
-                    value={titleInput}
-                  />
-                </>
-              )}
-              {title}
+              {snippet?.title}
             </h1>
           </div>
           <div style={{ display: "flex", alignItems: "flex-end" }}>
             <div>
               <label htmlFor="languages"></label>
               <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
+                defaultValue="hello"
+                value={snippet?.language}
                 style={{ padding: "5px" }}
                 name="languages"
                 id="languages"
@@ -488,12 +384,12 @@ function Ace() {
         </div>
         <div style={{ width: "80vh", height: editorHeight }}>
           <AceEditor
-            mode={language}
+            mode={snippet?.language}
             theme="dracula"
             height="100%"
             width="100%"
             value={value}
-            onChange={onChange}
+            onChange={e => setValue(e.target.value)}
             showPrintMargin={false}
             name="UNIQUE_ID_OF_DIV"
             editorProps={{ $blockScrolling: true }}
@@ -539,13 +435,13 @@ function Ace() {
 
           {solutionToggle && (
             <AceEditor
-              mode={language}
+            //   mode={language}
               theme="dracula"
               height="90%"
               width="100%"
-              value={solution}
+            //   value={solution}
               showPrintMargin={false}
-              onChange={(e) => setSolution(e)}
+            //   onChange={(e) => setSolution(e)}
               name="UNIQUE_ID_OF_DIV"
               editorProps={{ $blockScrolling: true }}
             />
@@ -562,8 +458,8 @@ function Ace() {
               marginRight: "20px",
             }}
           >
-            {category ? (
-              `Category: ${category}`
+            {snippet?.category ? (
+              `Category: ${snippet?.category}`
             ) : (
               <>
                 <label style={{ fontSize: "16px" }} htmlFor="category">
@@ -596,8 +492,8 @@ function Ace() {
         >
           <label htmlFor="difficulty">Difficulty: </label>
           <select
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
+            value={snippet?.difficulty}
+            // onChange={(e) => setDifficulty(e.target.value)}
             style={{ padding: "5px", width: "147px" }}
             name="difficulty"
             id="difficulty"
