@@ -1,14 +1,20 @@
 import { useState } from "react";
 import Snippet from "../types/Snippet";
 
-function SnipSidebar({ snippet, snippets }: { snippet: Snippet; snippets: Snippet[] }) {
+function SnipSidebar({
+  snippet,
+  snippets,
+}: {
+  snippet: Snippet;
+  snippets: Snippet[];
+}) {
   const [sidebarCategory, setSidebarCategory] = useState(snippet?.category);
   const snipCategories: Set<string> = new Set();
   for (let snippet of snippets) {
     snipCategories.add(snippet.category);
   }
   return (
-    <>
+    <div className="sidenav">
       <label htmlFor="category"></label>
       <select
         value={sidebarCategory}
@@ -31,7 +37,7 @@ function SnipSidebar({ snippet, snippets }: { snippet: Snippet; snippets: Snippe
             <li key={snippet.id}>{snippet.title}</li>
           ))}
       </ol>
-    </>
+    </div>
   );
 }
 

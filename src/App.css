@@ -110,7 +110,7 @@ ol li::before {
 
 .console-container {
   height: 100px;
-  width: 636px;
+  width: 80vh;
   background-color: black;
   color: white;
   font-family: Arial, Helvetica, sans-serif;
@@ -130,3 +130,6 @@ ol li::before {
   font-family: "Roboto Mono",monospace;
 }
 
+.button {
+  padding: 5px;
+}

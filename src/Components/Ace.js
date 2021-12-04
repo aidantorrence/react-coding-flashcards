@@ -1,28 +1,18 @@
 import React, { useState, useEffect } from "react";
 import AceEditor from "react-ace";
 import Loader from "./Loader";
-import useDidMountEffect from "../utils/useDidMountEffect.js";
 import { useQuery } from "react-query";
 import axios from "axios";
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/theme-dracula";
-import getRandomSnippet from "../utils/getRandomSnippet.js";
 import SnipSidebar from "./SnipSidebar";
 import SnipFilter from "./SnipFilter";
-import { languageCodes } from "../utils/languageCodes";
-import executeCode from "../utils/executeCode";
+import executeCode from "../queries/executeCode";
 import CodeOutput from "./CodeOutput";
-
-async function getSnippets() {
-  try {
-    const res = await axios.get("http://localhost:8080/");
-    return res.data;
-  } catch (e) {
-    console.log(e);
-  }
-}
+import { getSnippets } from "../queries/getSnippets.ts";
+import { Prompt } from "./Prompt";
 
 async function createSnippet(
   title,
@@ -98,13 +88,7 @@ function Ace() {
     status,
     data: snippets,
     error,
-  } = useQuery("getSnippets", async () => {
-    const { data } = await axios.get("http://localhost:8080/");
-    if (data) {
-      setSnippet(getRandomSnippet(data));
-    }
-    return data;
-  });
+  } = useQuery("getSnippets", getSnippets(setSnippet));
 
   const {
     refetch,
@@ -114,11 +98,6 @@ function Ace() {
     refetchOnWindowFocus: false,
     enabled: false,
   });
-
-  //   if (data) {
-  //       const { title, prompt, language, category, difficulty, solution } =
-  //         data[data?.arrId] || {};
-  //   }
 
   function handleRandomSnip() {
     const randomSnippet =
@@ -193,21 +172,19 @@ function Ace() {
 
   return (
     <>
-      <div className="sidenav">
-        <SnipSidebar snippet={snippet} snippets={snippets} />
-      </div>
-      <div>
+      <SnipSidebar snippet={snippet} snippets={snippets} />
+
+      <div className="buttons">
         <button onClick={handleNewSnip}>New</button>
         <button onClick={handleRandomSnip}>Generate</button>
-        {/* <button onClick={handleSnipSave}>Save</button> */}
+        <button onClick={"handleSnipSave"}>Save</button>
         <button onClick={handleDeleteSnip}>Delete</button>
       </div>
+      {/* Header */}
       <div className="code-editor-container">
         <div className="code-editor-header">
           <div className="code-editor-title">
-            <h1 style={{ display: "flex", fontSize: "22px" }}>
-              {snippet?.title}
-            </h1>
+            <h1 style={{ fontSize: "22px" }}>{snippet?.title}</h1>
           </div>
           <div style={{ display: "flex", alignItems: "flex-end" }}>
             <div>
@@ -232,48 +209,33 @@ function Ace() {
             </div>
           </div>
         </div>
-        <div style={{ width: "80vh", height: editorHeight }}>
-          <AceEditor
-            mode={snippet?.language}
-            theme="dracula"
-            height="100%"
-            width="100%"
-            value={snippet?.prompt}
-            onChange={(value) => setSnippet({ ...snippet, prompt: value })}
-            showPrintMargin={false}
-            name="UNIQUE_ID_OF_DIV"
-            editorProps={{ $blockScrolling: true }}
-            fontFamily="Roboto Mono"
-          />
-        </div>
+        <Prompt
+          editorHeight={editorHeight}
+          snippet={snippet}
+          setSnippet={setSnippet}
+        />
       </div>
       <div>
+        {/* buttons */}
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <div>
-            <button style={{ padding: "5px" }} onClick={handleConsoleClick}>
+            <button className="button" onClick={handleConsoleClick}>
               Run
             </button>
-            <button style={{ padding: "5px" }} onClick={handleExpandClick}>
+            <button className="button" onClick={handleExpandClick}>
               Expand
             </button>
           </div>
           <div>
-            <button style={{ padding: "5px" }} onClick={handleRandomSnip}>
+            <button className="button" onClick={handleRandomSnip}>
               Solved
             </button>
-            <button style={{ padding: "5px" }} onClick={handleRandomSnip}>
+            <button className="button" onClick={handleRandomSnip}>
               Failed
             </button>
           </div>
         </div>
-        <div className="console-container" style={{ width: "80vh" }}>
           <CodeOutput status={executionStatus} data={outputData} />
-          {isLoading ? (
-            <Loader />
-          ) : (
-            <p style={{ padding: "5px" }}>{outputString}</p>
-          )}
-        </div>
         <div
           className="solution-container"
           style={{ width: "80vh", height: solutionHeight }}
