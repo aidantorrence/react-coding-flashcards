@@ -9,10 +9,10 @@ function SnipSidebar({
   snippets: Snippet[];
 }) {
   const [sidebarCategory, setSidebarCategory] = useState(snippet?.category);
+
   const snipCategories: Set<string> = new Set();
-  for (let snippet of snippets) {
-    snipCategories.add(snippet.category);
-  }
+  snippets?.forEach(snip => snipCategories.add(snip.category));
+
   return (
     <div className="sidenav">
       <label htmlFor="category"></label>
@@ -31,8 +31,7 @@ function SnipSidebar({
         ))}
       </select>
       <ol>
-        {snippets
-          .filter((snippet) => snippet.category === sidebarCategory)
+        {snippets?.filter((snippet) => snippet.category === sidebarCategory)
           .map((snippet) => (
             <li key={snippet.id}>{snippet.title}</li>
           ))}

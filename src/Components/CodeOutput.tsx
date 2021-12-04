@@ -1,10 +1,10 @@
 import Output from "../types/Output";
 import Loader from "./Loader";
 
-function CodeOutput({ status, data }: { status: string, data: Output }) {
+function CodeOutput({ status, data, isFetching }: { status: string, data: Output, isFetching: boolean }) {
   let outputString = data ? atob(data?.stderr || data?.stdout || "") : "";
-
-  if (status === "loading") return <Loader />;
+  console.log('refetch', isFetching, outputString)
+  if (isFetching) return <Loader />;
   if (status === "error") return <div>error</div>;
 
   return (
