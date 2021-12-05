@@ -68,14 +68,13 @@ async function deleteSnippet(id) {
 
 function Ace() {
   const [snippet, setSnippet] = useState({});
-  const [value, setValue] = useState("");
   const [solutionToggle, setSolutionToggle] = useState(false);
   const [solutionHeight, setSolutionHeight] = useState("");
   const [editorHeight, setEditorHeight] = useState("450px");
   const [filteredCategory, setFilteredCategory] = useState("All");
 
 
-
+// execute code on cmdEnter
   useEffect(() => {
     document.addEventListener("keydown", handleCmndEnter);
     return () => document.removeEventListener("keydown", handleCmndEnter);
@@ -87,6 +86,7 @@ function Ace() {
     }
   }
 
+  //fetch snippets
   const {
     status,
     isFetching,
@@ -97,6 +97,7 @@ function Ace() {
     refetchOnWindowFocus: false,
   });
 
+  // send code snippet to api to execute
   const {
     refetch: executeCodeRefetch,
     status: executionStatus,
@@ -136,11 +137,11 @@ function Ace() {
   //   }
 
   function handleNewSnip() {
-    setValue("");
+    // setValue("");
     setEditorHeight("250px");
   }
   function handleDeleteSnip() {
-    setValue("");
+    // setValue("");
     setEditorHeight("250px");
   }
 
@@ -150,13 +151,6 @@ function Ace() {
     ).toString();
     setEditorHeight(`${expandedHeight}px`);
   }
-
-  console.log(
-    "react-query test snippets fetch",
-    snippets,
-    "react-query error",
-    error
-  );
 
   if (status === "error") return <>Error: {error.message}</>;
   if (isFetching) return <div>Loading</div>;
