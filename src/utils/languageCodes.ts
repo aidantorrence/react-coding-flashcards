@@ -1,0 +1,1 @@
+export const languageCodes: { [key: string]: number } = { python: 71, javascript: 63 }
