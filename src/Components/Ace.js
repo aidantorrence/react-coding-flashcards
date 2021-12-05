@@ -73,8 +73,7 @@ function Ace() {
   const [editorHeight, setEditorHeight] = useState("450px");
   const [filteredCategory, setFilteredCategory] = useState("All");
 
-
-// execute code on cmdEnter
+  // execute code on cmdEnter
   useEffect(() => {
     document.addEventListener("keydown", handleCmndEnter);
     return () => document.removeEventListener("keydown", handleCmndEnter);
@@ -82,7 +81,7 @@ function Ace() {
 
   function handleCmndEnter(e) {
     if (e.keyCode === 13 && e.metaKey) {
-        executeCodeRefetch();
+      executeCodeRefetch();
     }
   }
 
@@ -110,13 +109,13 @@ function Ace() {
 
   useEffect(() => {
     const filteredSnippets = snippets?.filter(
-        (snip) => snip.category === filteredCategory || filteredCategory === "All"
-      );
-      setSnippet(getRandomSnippet(filteredSnippets || []));
-      setSolutionToggle(false);
-      setSolutionHeight("");
-      setEditorHeight("450px");
-}, [snippets, filteredCategory, isFetching]);
+      (snip) => snip.category === filteredCategory || filteredCategory === "All"
+    );
+    setSnippet(getRandomSnippet(filteredSnippets || []));
+    setSolutionToggle(false);
+    setSolutionHeight("");
+    setEditorHeight("450px");
+  }, [snippets, filteredCategory, isFetching]);
 
   //   function handleSnipSave() {
   //     if ((!categoryInput && !category) || !difficulty || !value) {
@@ -157,7 +156,11 @@ function Ace() {
 
   return (
     <>
-      <SnipSidebar snippet={snippet} snippets={snippets} />
+      <SnipSidebar
+        setSnippet={setSnippet}
+        snippet={snippet}
+        snippets={snippets}
+      />
 
       <div className="buttons">
         <button onClick={handleNewSnip}>New</button>

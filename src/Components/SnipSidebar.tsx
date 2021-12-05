@@ -4,14 +4,16 @@ import Snippet from "../types/Snippet";
 function SnipSidebar({
   snippet,
   snippets,
+  setSnippet,
 }: {
   snippet: Snippet;
   snippets: Snippet[];
+  setSnippet: (snippet: Snippet) => void;
 }) {
   const [sidebarCategory, setSidebarCategory] = useState(snippet?.category);
 
   const snipCategories: Set<string> = new Set();
-  snippets?.forEach(snip => snipCategories.add(snip.category));
+  snippets?.forEach((snip) => snipCategories.add(snip.category));
 
   return (
     <div className="sidenav">
@@ -31,9 +33,16 @@ function SnipSidebar({
         ))}
       </select>
       <ol>
-        {snippets?.filter((snippet) => snippet.category === sidebarCategory)
-          .map((snippet) => (
-            <li key={snippet.id}>{snippet.title}</li>
+        {snippets
+          ?.filter((snip) =>
+            sidebarCategory
+              ? snip.category === sidebarCategory
+              : snip.category === snippet?.category
+          )
+          .map((snip) => (
+            <li onClick={() => setSnippet(snip)} key={snip.id}>
+              {snip.title}
+            </li>
           ))}
       </ol>
     </div>

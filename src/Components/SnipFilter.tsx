@@ -12,15 +12,14 @@ export default function SnipFilter({
   snippets,
 }: SnipFilterProps) {
   const snipCategories: Set<string> = new Set();
-  snippets?.forEach(snip => snipCategories.add(snip.category));
+  snippets?.forEach((snip) => snipCategories.add(snip.category));
 
   return (
     <>
       <label htmlFor="filteredCategory"></label>
       <select
         value={filteredCategory}
-        onChange={(e) => setFilteredCategory(e.target.value)
-      }
+        onChange={(e) => setFilteredCategory(e.target.value)}
         style={{ padding: "5px" }}
         name="filteredCategory"
         id="filteredCategory"
