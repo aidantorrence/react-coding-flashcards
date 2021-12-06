@@ -40,7 +40,7 @@ function SnipSidebar({
               : snip.category === snippet?.category
           )
           .map((snip) => (
-            <li onClick={() => setSnippet(snip)} key={snip.id}>
+            <li onClick={() => setSnippet(snip)} key={snip._id}>
               {snip.title}
             </li>
           ))}

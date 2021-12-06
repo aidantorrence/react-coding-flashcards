@@ -1,6 +1,6 @@
 
 interface Snippet {
-    id: string,
+    _id: string,
     title: string,
     prompt: string,
     language: string,

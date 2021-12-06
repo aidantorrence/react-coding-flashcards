@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Loader from "./Loader";
 import { useQuery } from "react-query";
 import axios from "axios";
 import AceEditor from "react-ace";
@@ -14,47 +13,20 @@ import getSnippets from "../queries/getSnippets";
 import { Solution } from "./Solution";
 import { Header } from "./Header";
 import getRandomSnippet from "../utils/getRandomSnippet";
+import SnipCategories from "./SnipCategories";
 
-async function createSnippet(
-  title,
-  prompt,
-  language,
-  category,
-  difficulty,
-  solution
-) {
-  axios
-    .post("http://localhost:8080/", {
-      title,
-      prompt,
-      language,
-      category,
-      difficulty,
-      solution,
-    })
-    .then((data) => console.log(data))
-    .catch((e) => console.log(e));
+async function createSnippet(snippet) {
+  try {
+    const { data } = await axios.post("http://localhost:8080/", snippet);
+    console.log(data);
+  } catch (e) {
+    console.log(e);
+  }
 }
 
-async function updateSnippet(
-  id,
-  title,
-  prompt,
-  language,
-  category,
-  difficulty,
-  solution
-) {
+async function updateSnippet(snippet) {
   axios
-    .put("http://localhost:8080/", {
-      id,
-      title,
-      prompt,
-      language,
-      category,
-      difficulty,
-      solution,
-    })
+    .put("http://localhost:8080/", snippet)
     .then((data) => console.log(data))
     .catch((e) => console.log(e));
 }
@@ -66,12 +38,22 @@ async function deleteSnippet(id) {
     .catch((e) => console.log(e));
 }
 
+const emptySnippet = {
+  title: "",
+  prompt: "",
+  language: "",
+  category: "",
+  difficulty: "",
+  solution: "",
+};
+
 function Ace() {
-  const [snippet, setSnippet] = useState({});
+  const [snippet, setSnippet] = useState(emptySnippet);
   const [solutionToggle, setSolutionToggle] = useState(false);
   const [solutionHeight, setSolutionHeight] = useState("");
   const [editorHeight, setEditorHeight] = useState("450px");
   const [filteredCategory, setFilteredCategory] = useState("All");
+  const [inputMode, setInputMode] = useState(false);
 
   // execute code on cmdEnter
   useEffect(() => {
@@ -115,33 +97,23 @@ function Ace() {
     setSolutionToggle(false);
     setSolutionHeight("");
     setEditorHeight("450px");
+    setInputMode(false);
   }, [snippets, filteredCategory, isFetching]);
 
-  //   function handleSnipSave() {
-  //     if ((!categoryInput && !category) || !difficulty || !value) {
-  //       return;
-  //     }
-  //     createSnippet(
-  //       value,
-  //       language,
-  //       categoryInput || category,
-  //       difficulty,
-  //       solution
-  //     );
-  //     getSnippets().then((data) => {
-  //       setCodeSnippets((prev) => data || prev);
-  //       setFilteredSnippets((prev) => data || prev);
-  //       console.log("yessman", codeSnippets);
-  //     });
-  //   }
-
   function handleNewSnip() {
-    // setValue("");
-    setEditorHeight("250px");
+    setSnippet(emptySnippet);
+    setInputMode(true);
+    setSolutionHeight("250px");
   }
+  async function handleSaveSnip() {
+    setInputMode(false);
+    inputMode ? await createSnippet(snippet) : await updateSnippet(snippet);
+    snippetsRefetch();
+  }
+
   function handleDeleteSnip() {
-    // setValue("");
-    setEditorHeight("250px");
+    deleteSnippet(snippet._id);
+    snippetsRefetch();
   }
 
   function handleExpandClick() {
@@ -165,7 +137,7 @@ function Ace() {
       <div className="buttons">
         <button onClick={handleNewSnip}>New</button>
         <button onClick={snippetsRefetch}>Generate</button>
-        <button onClick={"handleSnipSave"}>Save</button>
+        <button onClick={handleSaveSnip}>Save</button>
         <button onClick={handleDeleteSnip}>Delete</button>
       </div>
       <Header
@@ -175,6 +147,7 @@ function Ace() {
         snippets={snippets}
         editorHeight={editorHeight}
         setSnippet={setSnippet}
+        inputMode={inputMode}
       />
       <div>
         {/* buttons */}
@@ -207,9 +180,38 @@ function Ace() {
           solutionToggle={solutionToggle}
           snippet={snippet}
           setSolutionToggle={setSolutionHeight}
+          setSnippet={setSnippet}
         />
         <div>
-          <h2 className="category">Category: {snippet?.category}</h2>
+          <h2 className="category">
+            {!inputMode ? (
+              `Category: ${snippet?.category}`
+            ) : (
+              <>
+                <label style={{ fontSize: "16px" }} htmlFor="category">
+                  Add a category:
+                </label>
+                <input
+                  style={{
+                    width: "150px",
+                    paddingLeft: "5px",
+                    marginLeft: "5px",
+                  }}
+                  placeholder="Add new..."
+                  onChange={(e) =>
+                    setSnippet({ ...snippet, category: e.target.value })
+                  }
+                  type="text"
+                  value={snippet?.category}
+                />
+                <SnipCategories
+                  setSnippet={setSnippet}
+                  snippets={snippets}
+                  snippet={snippet}
+                />
+              </>
+            )}
+          </h2>
         </div>
         <div className="difficulty-container">
           <label htmlFor="difficulty">Difficulty: </label>
@@ -218,6 +220,9 @@ function Ace() {
             style={{ padding: "5px" }}
             name="difficulty"
             id="difficulty"
+            onChange={(e) =>
+              setSnippet({ ...snippet, difficulty: e.target.value })
+            }
           >
             <option value="Choose an option">Choose an option</option>
             <option value="easy">Easy</option>
