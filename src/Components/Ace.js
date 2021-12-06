@@ -24,25 +24,9 @@ async function createSnippet(snippet) {
   }
 }
 
-async function updateSnippet(
-  _id,
-  title,
-  prompt,
-  language,
-  category,
-  difficulty,
-  solution
-) {
+async function updateSnippet(snippet) {
   axios
-    .put("http://localhost:8080/", {
-      _id,
-      title,
-      prompt,
-      language,
-      category,
-      difficulty,
-      solution,
-    })
+    .put("http://localhost:8080/", snippet)
     .then((data) => console.log(data))
     .catch((e) => console.log(e));
 }
@@ -121,9 +105,9 @@ function Ace() {
     setInputMode(true);
     setSolutionHeight("250px");
   }
-  async function handleCreateSnip() {
+  async function handleSaveSnip() {
     setInputMode(false);
-    await createSnippet(snippet);
+    inputMode ? await createSnippet(snippet) : await updateSnippet(snippet);
     snippetsRefetch();
   }
 
@@ -153,7 +137,7 @@ function Ace() {
       <div className="buttons">
         <button onClick={handleNewSnip}>New</button>
         <button onClick={snippetsRefetch}>Generate</button>
-        <button onClick={handleCreateSnip}>Save</button>
+        <button onClick={handleSaveSnip}>Save</button>
         <button onClick={handleDeleteSnip}>Delete</button>
       </div>
       <Header
