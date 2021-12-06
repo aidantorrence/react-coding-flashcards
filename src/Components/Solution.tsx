@@ -5,11 +5,12 @@ interface Props {
     solutionHeight: string;
     solutionToggle: boolean;
     snippet: Snippet;
+    setSnippet: (snippet: Snippet) => void;
     setSolutionToggle: (value: boolean) => void;
     setSolutionHeight: (value: string) => void;
 }
 
-export function Solution({ solutionHeight, setSolutionHeight, snippet }: Props) {
+export function Solution({ setSnippet, solutionHeight, setSolutionHeight, snippet }: Props) {
 
 
     function handleSolutionHeight() {
@@ -35,6 +36,7 @@ export function Solution({ solutionHeight, setSolutionHeight, snippet }: Props) 
                 value={snippet?.solution}
                 showPrintMargin={false}
                 name="UNIQUE_ID_OF_DIV"
+                onChange={(value) => setSnippet({ ...snippet, solution: value })}
                 editorProps={{ $blockScrolling: true }} />
         )}
     </div>;
