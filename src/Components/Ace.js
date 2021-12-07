@@ -31,11 +31,16 @@ async function updateSnippet(snippet) {
     .catch((e) => console.log(e));
 }
 
-async function deleteSnippet(id) {
-  axios
-    .delete("http://localhost:8080/", { data: { id } })
-    .then((data) => console.log(data))
-    .catch((e) => console.log(e));
+async function deleteSnippet(id, callback) {
+  try {
+    const { data } = await axios.delete("http://localhost:8080/", {
+      data: { id },
+    });
+    callback();
+    console.log(data);
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 const emptySnippet = {
@@ -112,8 +117,7 @@ function Ace() {
   }
 
   function handleDeleteSnip() {
-    deleteSnippet(snippet._id);
-    snippetsRefetch();
+    deleteSnippet(snippet._id, snippetsRefetch);
   }
 
   function handleExpandClick() {
